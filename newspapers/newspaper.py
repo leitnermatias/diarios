@@ -4,14 +4,14 @@ import requests
 
 
 class Newspaper(ABC):
-    def __init__(self, name):
+    def __init__(self, name: str):
         self.name = name
         self.parser = BeautifulSoup
 
     def __repr__(self) -> str:
         return f"> {self.name}"
 
-    def get_html(self, url):
+    def get_html(self, url) -> str:
         response = requests.get(url)
 
         if response.status_code == 200:

@@ -1,16 +1,15 @@
-from newspaper import Newspaper
+from .newspaper import Newspaper
 
 
 class Clarin(Newspaper):
     def __init__(self):
-        super().__init__("clarin")
+        super().__init__("clarin",
+                         )
 
-    def last_news(self, limit: int = 10):
+    def last_news(self, limit: int = 10) -> list[dict]:
 
-        last_news = []
-
+        last_news = list()
         for i in range(int(limit / 10)):
-
             url = f"https://www.clarin.com/ultimo-momento/ondemand/{i * 10}"
             html = self.get_html(url)
 
@@ -35,3 +34,42 @@ class Clarin(Newspaper):
                     news["link"] = link
                     news["img"] = img_src
                     last_news.append(news)
+
+        return last_news
+
+
+class LaCapital(Newspaper):
+    def __init__(self):
+        super().__init__("lacapital")
+
+    def last_news(self, limit: int = 10) -> list[dict]:
+        html = self.get_html("https://www.lacapital.com.ar/secciones/ultimo-momento.html")
+
+        soup = self.parser(html, "html.parser")
+
+        last_news = list()
+
+        title_wrappers = soup.select("article.ultimas-noticias-entry-container")
+
+        for wrapper in title_wrappers:
+
+            if len(last_news) == limit:
+                break
+
+            a_tag = wrapper.select_one("a.cover-link")
+            h2_tag = wrapper.select_one("h2.entry-title")
+            img_tag = wrapper.select_one("picture > img")
+
+            link = a_tag.get("href", None)
+            title = h2_tag.text
+            img_src = img_tag.get("data-td-src-property", None)
+
+            if link is not None and title is not None and img_src is not None:
+                news = dict()
+                news["title"] = title
+                news["img"] = img_src
+                news["link"] = link
+
+                last_news.append(news)
+
+        return last_news
