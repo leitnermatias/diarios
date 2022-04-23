@@ -13,6 +13,16 @@ def get_html(url) -> str:
         raise Exception(f"[{response.status_code}] Couldnt GET html for {url} ")
 
 
+def get_json(url):
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        return response.json()
+
+    else:
+        raise Exception(f"[{response.status_code}] Couldnt GET json for {url} ")
+
+
 def validate_tags(*args):
     for tag in args:
         if tag is None:
@@ -29,5 +39,5 @@ class Newspaper(ABC):
     def __repr__(self) -> str:
         return f"> {self.name}"
 
-    def last_news(self):
+    def last_news(self, limit: int = 10):
         pass

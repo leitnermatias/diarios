@@ -1,4 +1,5 @@
-from .newspaper import Newspaper, get_html, validate_tags
+from .newspaper import Newspaper, get_html, validate_tags, get_json
+import pprint
 
 
 class Clarin(Newspaper):
@@ -115,6 +116,55 @@ class Rosario3(Newspaper):
                 news["title"] = title
                 news["link"] = link
                 news["img"] = img_src
+                last_news.append(news)
+
+        return last_news
+
+
+class LaNacion(Newspaper):
+    def __init__(self):
+        super().__init__("lanacion")
+
+    def last_news(self, limit: int = 10):
+
+        titles = list()
+
+        page = 1
+        while page < 5:
+            response = get_json(
+                'https://www.lanacion.com.ar/pf/api/v3/content/fetch/acuArticlesSource?query={"size":100,"page":' + str(
+                    page) + "}")
+
+            content_elements = response.get("content_elements", None)
+
+            if content_elements is not None:
+                [titles.append(title) for title in content_elements]
+            else:
+                break
+
+            page += 1
+        print(len(titles))
+
+        last_news = list()
+
+        for title in titles:
+
+            if len(last_news) == limit:
+                break
+
+            news = dict()
+            if "headlines" in title and "website_url" in title and "promo_items" in title:
+                headlines = title["headlines"]
+                news["link"] = title["website_url"]
+                promo_items = title["promo_items"]
+
+                if "basic" in headlines and "basic" in promo_items:
+                    news["title"] = headlines["basic"]
+
+                    if "url" in promo_items["basic"]:
+                        news["img"] = promo_items["basic"]["url"]
+
+            if "title" in news and "link" in news and "img" in news:
                 last_news.append(news)
 
         return last_news
