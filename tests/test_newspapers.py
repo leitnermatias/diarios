@@ -35,3 +35,17 @@ def test_lacapital_last_news():
 
     for news in last_news_100:
         assert news_has_fields(news)
+
+
+def test_rosario3_last_news():
+    rosario3 = implementations.LaCapital()
+
+    last_news_10 = rosario3.last_news(limit=10)
+    last_news_50 = rosario3.last_news(limit=50)
+    last_news_100 = rosario3.last_news(limit=100)
+
+    assert type(last_news_10) is list and type(last_news_50) is list and type(last_news_100) is list
+    assert len(last_news_10) == 10 and len(last_news_50) == 50 and len(last_news_100) == 100
+
+    for news in last_news_100:
+        assert news_has_fields(news)
