@@ -1,5 +1,4 @@
 from .newspaper import Newspaper, get_html, validate_tags, get_json
-import pprint
 
 
 class Clarin(Newspaper):
@@ -143,7 +142,6 @@ class LaNacion(Newspaper):
                 break
 
             page += 1
-        print(len(titles))
 
         last_news = list()
 
