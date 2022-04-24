@@ -1,4 +1,4 @@
-from .newspaper import Newspaper, get_html, validate_tags, get_json
+from .newspaper import Newspaper, get_html, validate_tags, get_json, create_news_dict
 
 
 class Clarin(Newspaper):
@@ -19,8 +19,6 @@ class Clarin(Newspaper):
 
             for wrapper in title_wrappers:
 
-                news = dict()
-
                 a_tag = wrapper.select_one("a.link-new")
                 h2_tag = wrapper.select_one("h2")
                 img_tag = wrapper.select_one("img.img-responsive.intelResolution.lazyload")
@@ -33,9 +31,7 @@ class Clarin(Newspaper):
                 img_src = img_tag.get("src", None)
 
                 if link is not None and title is not None and img_src is not None:
-                    news["title"] = title
-                    news["link"] = link
-                    news["img"] = img_src
+                    news = create_news_dict(title, link, img_src)
                     last_news.append(news)
 
         return last_news
@@ -71,11 +67,7 @@ class LaCapital(Newspaper):
             img_src = img_tag.get("data-td-src-property", None)
 
             if link is not None and title is not None and img_src is not None:
-                news = dict()
-                news["title"] = title
-                news["img"] = img_src
-                news["link"] = link
-
+                news = create_news_dict(title, link, img_src)
                 last_news.append(news)
 
         return last_news
@@ -111,10 +103,7 @@ class Rosario3(Newspaper):
             img_src = img_tag.get("src", None)
 
             if title is not None and link is not None and img_src is not None:
-                news = dict()
-                news["title"] = title
-                news["link"] = link
-                news["img"] = img_src
+                news = create_news_dict(title, link, img_src)
                 last_news.append(news)
 
         return last_news
@@ -150,19 +139,58 @@ class LaNacion(Newspaper):
             if len(last_news) == limit:
                 break
 
-            news = dict()
+            title_text = None
+            link = None
+            img_src = None
             if "headlines" in title and "website_url" in title and "promo_items" in title:
                 headlines = title["headlines"]
-                news["link"] = title["website_url"]
+                link = f"""https://www.lanacion.com.ar{title["website_url"]}"""
                 promo_items = title["promo_items"]
 
                 if "basic" in headlines and "basic" in promo_items:
-                    news["title"] = headlines["basic"]
+                    title_text = headlines["basic"]
 
                     if "url" in promo_items["basic"]:
-                        news["img"] = promo_items["basic"]["url"]
+                        img_src = promo_items["basic"]["url"]
 
-            if "title" in news and "link" in news and "img" in news:
+            if title_text is not None and link is not None and img_src is not None:
+                news = create_news_dict(title_text, link, img_src)
+                last_news.append(news)
+
+        return last_news
+
+
+class Perfil(Newspaper):
+    def __init__(self):
+        super().__init__("perfil")
+
+    def last_news(self, limit: int = 10):
+        html = get_html("https://www.perfil.com/ultimo-momento")
+
+        soup = self.parser(html, "html.parser")
+
+        title_wrapper = soup.select("article.articulo")
+
+        last_news = list()
+
+        for wrapper in title_wrapper:
+
+            if len(last_news) == limit:
+                break
+
+            a_tag = wrapper.select_one("a")
+            h2_tag = wrapper.select_one("h2")
+            img_tag = wrapper.select_one("img.img-fluid")
+
+            if not validate_tags(a_tag, h2_tag, img_tag):
+                continue
+
+            title = h2_tag.text
+            link = a_tag.get("href", None)
+            img_src = img_tag.get("src", None)
+
+            if title is not None and link is not None and img_src is not None:
+                news = create_news_dict(title, link, img_src)
                 last_news.append(news)
 
         return last_news

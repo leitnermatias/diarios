@@ -23,6 +23,14 @@ def get_json(url):
         raise Exception(f"[{response.status_code}] Couldnt GET json for {url} ")
 
 
+def create_news_dict(title, link, img_src):
+    return dict(
+        title=title,
+        link=link,
+        img=img_src
+    )
+
+
 def validate_tags(*args):
     for tag in args:
         if tag is None:
