@@ -15,8 +15,8 @@ class Clarin(Newspaper):
 
             soup = self.parser(html, "html.parser")
 
-            title_wrappers = soup.select("li.list-format.list")
-
+            title_wrappers = soup.select("article.list-format.list")
+            
             for wrapper in title_wrappers:
 
                 a_tag = wrapper.select_one("a.link-new")
